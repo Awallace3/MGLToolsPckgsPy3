@@ -556,7 +556,7 @@ class ResidueSetSelector(TreeNodeSetSelector):
     def getRange(self, nodes, item):
         if len(nodes)<2:
             return None
-        levItList=split(item, '-')
+        levItList=item.split('-')
         if len(levItList)!=2: return None
         #if levItList[0][0]=='#' or levItList[1][0]=='#':
         if levItList[0][0]=='#' and levItList[1][0]=='#':
@@ -571,7 +571,7 @@ class ResidueSetSelector(TreeNodeSetSelector):
     
     def getResidueRelRange(self, nodes, item):
         #this needs to be done on a PER CHAIN basis:
-        levItList = split(item, '-')
+        levItList = item.split('-')
         selNodes = None
         parentNodes = ChainSet(nodes.parent.uniq())
         for par in parentNodes:
@@ -803,10 +803,10 @@ class Chain(ProteinMolecule):
         #diff = [0,0,0]
         p = 0
         # Get the C atom of the first residue res1 :
-        c = res1.atoms.get(lambda x: split(x.name)[0]=='C')
+        c = res1.atoms.get(lambda x: x.name.split()[0]=='C')
         
         if c is None or len(c) == 0: c = res1.atoms.get(lambda x:
-                                        split(x.name)[0]=='O3*')
+                                        x.name.split()[0]=='O3*')
         # Get the N atom of the second Residue only if the first residue
         # has a C atom.
         if not c is None and len(c) != 0:
@@ -814,9 +814,9 @@ class Chain(ProteinMolecule):
             cx, cy, cz = c[0].coords
             cov_radc = c[0].bondOrderRadius
 
-            n = res2.atoms.get(lambda x: split(x.name)[0]=='N')
+            n = res2.atoms.get(lambda x: x.name.split()[0]=='N')
             if n is None or len(n) == 0:
-                n = res2.atoms.get(lambda x:split(x.name)[0]=='P')
+                n = res2.atoms.get(lambda x: x.name.split()[0]=='P')
             if n is not None and len(n)!=0:
                 nx, ny,nz = n[0].coords
                 cov_radsum = (cov_radc + n[0].bondOrderRadius)*1.1

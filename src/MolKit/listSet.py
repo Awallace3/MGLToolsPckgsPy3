@@ -20,6 +20,7 @@ in the set.
 import types
 from collections import UserList
 from mglutil.util import misc
+import itertools
 
 verbose = False
 
@@ -261,7 +262,7 @@ class ListSet(UserList):  # would (list) work???
 
                 else: # sequence of many values
                     assert len(self.data) == len(value)
-                    for o,v in map(None, self.data, value):
+                    for o,v in itertools.zip_longest(self.data, value):
                         setattr(o, member, v)
 #                    for i in xrange(len(self.data)):
 #                        self.data[i].__dict__[member] = value[i]

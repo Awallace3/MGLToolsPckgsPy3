@@ -92,10 +92,10 @@ class AtomHybridization:
     def get_atomic_number(self, name):
         """return the element number for a given name or raises a
         ValueError exception if the element is not known"""
-        _name = string.upper(name[0])
+        _name = name[0].upper()
         if len(name)>1:
-            if not name[1] in string.digits:
-                _name = _name + string.lower(name[1])
+            if not name[1].isdigit():
+                _name = _name + name[1].lower()
         if _name in list(babel_elements.keys()):
             return babel_elements[_name]['num'] 
         else:
@@ -557,14 +557,14 @@ class TypeConverter:
                 i = babel_types['INT'].index("X")
                 return babel_types[self.outputType][i]
             elif mode=='all_caps':
-                return string.upper(input)
+                return input.upper()
             else: return input
 
     def clean_atom_type(self, type_name):
-       name = string.upper(type_name[0])
+       name = type_name[0].upper()
        if len(type_name) > 1:
-           name = name + string.lower(type_name[1])
-           if name[1] not in string.letters:
+           name = name + type_name[1].lower()
+           if not name[1].isalpha():
                return name[0]
        return name
 

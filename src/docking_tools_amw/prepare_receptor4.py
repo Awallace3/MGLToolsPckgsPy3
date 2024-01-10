@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-#
-# 
-#
-# $Header: /opt/cvs/python/packages/share1.5/AutoDockTools/Utilities24/prepare_receptor4.py,v 1.13 2010/01/25 23:37:14 rhuey Exp $
-#
 import os 
 
 from MolKit import Read
@@ -14,7 +8,7 @@ from AutoDockTools.MoleculePreparation import AD4ReceptorPreparation
 def prepare_receptor4(
     # initialize required parameters
     #-s: receptor
-    receptor_filename =  None,
+    receptor_filename,
     verbose = None,
     #-A: repairs to make: add bonds and/or hydrogens or checkhydrogens
     repairs = '',
@@ -36,7 +30,7 @@ def prepare_receptor4(
     """ 
     # initialize required parameters
     #-s: receptor
-    receptor_filename =  None,
+    receptor_filename = str,
     verbose = None,
     #-A: repairs to make: add bonds and/or hydrogens or checkhydrogens
     repairs = '',
@@ -58,58 +52,7 @@ def prepare_receptor4(
     import sys
     import getopt
 
-    receptor_filename =  None
-
     # optional parameters
-    verbose = None
-    repairs = ''
-    charges_to_add = 'gasteiger'
-    preserve_charge_types=None
-    cleanup  = "nphs_lps_waters_nonstdres"
-    outputfilename = None
-    mode = 'automatic'
-    delete_single_nonstd_residues = None
-    dictionary = None
-
-    #'r:vo:A:Cp:U:eMh'
-    for o, a in opt_list:
-        if o in ('-r', '--r'):
-            receptor_filename = a
-            if verbose: print('set receptor_filename to ', a)
-        if o in ('-v', '--v'):
-            verbose = True
-            if verbose: print('set verbose to ', True)
-        if o in ('-o', '--o'):
-            outputfilename = a
-            if verbose: print('set outputfilename to ', a)
-        if o in ('-A', '--A'):
-            repairs = a
-            if verbose: print('set repairs to ', a)
-        if o in ('-C', '--C'):
-            charges_to_add = None
-            if verbose: print('do not add charges')
-        if o in ('-p', '--p'):
-            if not preserve_charge_types:
-                preserve_charge_types = a
-            else:
-                preserve_charge_types = preserve_charge_types + ','+ a
-            if verbose: print('preserve initial charges on ', preserve_charge_types)
-        if o in ('-U', '--U'):
-            cleanup  = a
-            if verbose: print('set cleanup to ', a)
-        if o in ('-e', '--e'):
-            delete_single_nonstd_residues  = True
-            if verbose: print('set delete_single_nonstd_residues to True')
-        if o in ('-M', '--M'):
-            mode = a
-            if verbose: print('set mode to ', a)
-        if o in ('-d', '--d'):
-            dictionary  = a
-            if verbose: print('set dictionary to ', dictionary)
-        if o in ('-h', '--'):
-            usage()
-            sys.exit()
-
 
     if not receptor_filename:
         print('prepare_receptor4: receptor filename must be specified.')

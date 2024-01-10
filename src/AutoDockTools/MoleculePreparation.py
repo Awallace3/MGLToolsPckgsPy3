@@ -113,13 +113,13 @@ class AutoDockMoleculePreparation:
             mol.buildBondsByDistance()
 
         #PROCESS molecule
-        self.cleanup_type_list = string.split(cleanup, '_')
+        self.cleanup_type_list = cleanup.split( '_')
         #if mode=='automatic':  #DO this ANYWAY???
         #remove waters + chains composed of nonstd residues
         self.cleanUpResidues(mol, self.cleanup_type_list)
 
         # REPAIR: possibly add bonds to non-bonded atoms + add hydrogens
-        self.repair_type_list = string.split(repairs, '_')
+        self.repair_type_list = repairs.split( '_')
         #if mode=='automatic':  #SHOULD THIS BE DONE ANYWAY???
         self.repairMol(mol, self.repair_type_list)
         ##3/25/2008: have to remove lps first because there is no atomic
@@ -745,7 +745,7 @@ class LigandPreparation(AutoDockMoleculePreparation):
     def __init__(self, molecule, mode='automatic', repairs='hydrogens_bonds',
                     charges_to_add='gasteiger', cleanup='nphs_lps',
                     allowed_bonds='backbone',  #amide + guanidinium off @@ backbone on (5/2014)
-                    root='auto', outputfilename=None, dict=None, debug=False,
+                    root='auto', outputfilename=None, dictionary=None, debug=False,
                     check_for_fragments=False, bonds_to_inactivate=[],
                     inactivate_all_torsions=False,
                     version=3, limit_torsions=False,
@@ -784,7 +784,7 @@ class LigandPreparation(AutoDockMoleculePreparation):
         self.aromCs = self.ACM.setAromaticCarbons(molecule) 
 
         #optional output summary filename to write types and number of torsions
-        self.dict = dict
+        self.dict = dictionary
 
         self.outputfilename = outputfilename
         #if mode is 'automatic': write outputfile now 
@@ -985,7 +985,7 @@ class AD4LigandPreparation(LigandPreparation):
     def __init__(self, molecule, mode='automatic', repairs='checkhydrogens',
                     charges_to_add='gasteiger', cleanup='nphs_lps_waters_nonstdres',
                     allowed_bonds='backbone',  #@@ amide, guanidinium off, backbone on (5/2014)
-                    root='auto', outputfilename=None, dict=None, debug=False,
+                    root='auto', outputfilename=None, dictionary=None, debug=False,
                     check_for_fragments=False, bonds_to_inactivate=[],
                     inactivate_all_torsions=False,
                     version=4, typeAtoms=True, limit_torsion_number=False, 
@@ -1004,7 +1004,7 @@ class AD4LigandPreparation(LigandPreparation):
                     repairs=repairs, charges_to_add=charges_to_add, 
                     cleanup=cleanup, allowed_bonds=allowed_bonds, 
                     root=root, outputfilename=outputfilename, 
-                    dict=dict, debug=debug,
+                    dictionary=dictionary, debug=debug,
                     check_for_fragments=check_for_fragments,
                     bonds_to_inactivate=bonds_to_inactivate, 
                     inactivate_all_torsions=inactivate_all_torsions,
@@ -1781,7 +1781,7 @@ class RotatableBondManager:
         self.detectAll = detectAll
         allowed_bond_list = []
         if allowed_bonds:
-            allowed_bond_list = string.split(allowed_bonds,'_')
+            allowed_bond_list = allowed_bonds.split( '_')
         #set up flags:
         allow_amide_torsions = 'amide' in allowed_bond_list
         molecule.has_amide = allow_amide_torsions
@@ -1806,7 +1806,7 @@ class RotatableBondManager:
         else:
             self.setroot(int(root))
         if len(bonds_to_inactivate):
-            bnds_list = list(map(int,string.split(bonds_to_inactivate,'_')))
+            bnds_list = list(map(int, bonds_to_inactivate.split( '_') ))
             #???
             #molecule.has_amide = 'amide' not in bnds_list
             #molecule.has_guanidinium = 'guanidinium' not in bnds_list
@@ -2143,7 +2143,24 @@ class RotatableBondManager:
                         if verbose: print(item.number, '-', item.name,': new largest subtree=', thisbranch)
                         item.maxbranch = thisbranch
             #bestList holds all current best choices for Root..
-            if item.maxbranch<mol.bestBranch:
+            # print(mol.bestBranch[0])
+            # print(dir(mol.bestBranch[0]))
+            # if item.maxbranch<mol.bestBranch:
+            # TODO: check if this adaptation works...
+            # if isinstance(item.maxbranch, list) and item.maxbranch<mol.bestBranch:
+            # 5 < []  # This will return True in Python 2 since len('int') < len('list'))
+            int_list = False
+            int_int = False
+            if isinstance(item.maxbranch, int) and isinstance(mol.bestBranch, int):
+                int_int = True
+            if isinstance(item.maxbranch, int) and isinstance(mol.bestBranch, AtomSet):
+                int_list = True
+            if verbose:
+                print()
+                print(f"{bestList = }")
+                print(type(item.maxbranch), type(mol.bestBranch))
+                print(item.maxbranch, mol.bestBranch)
+            if int_list or (int_int and item.maxbranch < mol.bestBranch):
                 if verbose: print('NEW ROOT CANDIDATE ', item.number,'-', item.name, ': largest subtree length =', item.maxbranch)
                 bestList = []
                 bestList.append(item)

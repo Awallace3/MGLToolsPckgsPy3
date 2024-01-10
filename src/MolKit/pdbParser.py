@@ -498,10 +498,10 @@ You have to provide one as the second argument' % key);
                                                     rec[78:80])
         
         # WHY ??? why not test elem=='L'
-        elem = element.lower
+        elem = element.lower()
         if elem =='l':
             element = 'Xx'
-        atom = Atom().lower()
+        atom = Atom(name, mol.curRes, element, top=mol)
 
         if name == 'CA' or name[:3] == 'CA@':
             # Set the flag hasCA to 1 if the atom name is CA

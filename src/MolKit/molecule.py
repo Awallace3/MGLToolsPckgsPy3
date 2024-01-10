@@ -26,6 +26,7 @@ from MolKit.tree import TreeNode, TreeNodeSet, TreeNodeSetSelector
 from math import sqrt
 # from hbtree import bhtreelib
 import numpy
+import itertools
 
 global bhtreeFlag
 try:
@@ -241,7 +242,7 @@ class AtomSet(TreeNodeSet):
     def addCharges(self, chargeSet, newCharges):
         """Add a set of charges with key 'chargeSet'"""
         assert len(newCharges) == len(self.data)
-        for a, c in map(None, self.data, newCharges):
+        for a, c in itertools.zip_longest(self.data, newCharges):
             a._charges[chargeSet] = c
   
 
