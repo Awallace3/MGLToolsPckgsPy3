@@ -62,6 +62,7 @@ def prepare_receptor4(
     #what about nucleic acids???
 
     mols = Read(receptor_filename)
+    print(mols)
     if verbose: print('read ', receptor_filename)
     mol = mols[0]
     preserved = {}
