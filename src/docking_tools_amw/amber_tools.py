@@ -33,10 +33,11 @@ prepareforleap crdset tmp1 name tmp2 pdbout {pdb_out_path} {" ".join(prepareforl
     os.system(f'rm {cpptraj_in} {cpptraj_out}')
     return
 
-
 def get_amber_charge(PRO_pdb_path):
     """
-    Get the total charge of a protein using tleap from AmberTools.
+    Get the total charge of a protein using tleap from AmberTools. Calls to 
+    sed, grep, and awk are used to extract the charges from the mol2 file
+    and handle special characters/cases.
     """
     def_dir = os.getcwd()
     path_to_pdb = "/".join(PRO_pdb_path.split("/")[:-1])
@@ -107,65 +108,24 @@ quit
     return total_charge, resnum_charge_dict
 
 
-def get_charge(PRO_pdb_path):
-    def_dir = os.getcwd()
-    path_to_pdb = "/".join(PRO_pdb_path.split("/")[:-1])
-    os.chdir(path_to_pdb)
-    pdb_name = os.path.basename(PRO_pdb_path)
-    pdb_name_no_ext = ".".join(pdb_name.split(".")[:-1])
-    mol2_path = pdb_name.replace("pdb", "mol2")
-    with open(f"tleap_{pdb_name_no_ext}.in", "w") as f:
-        f.write("source leaprc.protein.ff19SB\nsource leaprc.water.opc\n\n")
-        f.write(f'mol = loadPdb "{pdb_name}"\n')
-        f.write(f"savemol2 mol {mol2_path} 1\n")
-        f.write("quit")
-    cmd = f"tleap -f tleap_{pdb_name_no_ext}.in > tleap_{pdb_name_no_ext}.dat"
-    out = subprocess.run(cmd, shell=True, check=True)
-    if out.returncode != 0:
-        os.chdir(def_dir)
-        raise RuntimeError("tleap failed")
-    with open(mol2_path, 'rb') as input:
-        raw_data = input.read()
-    mol2_data = raw_data.decode('utf-8', 'ignore').split('\n')
-    with open(mol2_path, "w") as output:
-        output.write("\n".join(mol2_data))
-    # print(path_to_pdb, mol2_path, sep="/")
-    out_data, write = [], False
-    for count, line in enumerate(mol2_data):
-        if line.strip() == "@<TRIPOS>ATOM":
-            write = True
-        elif write == True:
-            out_data.append(line)
-        elif line.strip() == "@<TRIPOS>BOND":
-            write = False
-    charges_fn = f"charges_{pdb_name_no_ext}.txt"
-    print(charges_fn)
+def prepare_protein_QM(pdb_path, output_pdb_path: str=None):
+    if output_pdb_path is None:
+        output_pdb_path = pdb_fname.replace(".pdb", "_hfixed.pdb")
+    # Need to run 'reduce' to add hydrogens
+    cmd = ["reduce", "-FLIP", pdb_fname]
+    with open(output_pdb_path, "w") as file, open("error.log", "w") as error_file:
+        result = subprocess.run(cmd, stdout=file, stderr=error_file)
+    # Need to add missing residues/atoms
+    fixer = PDBFixer(filename=output_pdb_path)
+    fixer.findMissingResidues()
+    fixer.findNonstandardResidues()
+    fixer.findMissingAtoms()
+    fixer.addMissingAtoms()
+    fixer.addMissingHydrogens(pH=pH)
+    PDBFile.writeFile(fixer.topology, fixer.positions, open(output_pdb_path, "w"))
+    # Here we need to fix the HIS and CYS residues to have correct resnames for tleap
+    fix_CYS_HIS_cpptraj(output_pdb_path, output_pdb_path, identifier=n)
+    # Get the charge of the protein with tleap
+    total_charge, resnum_charge_dict = get_amber_charge(output_pdb_path)
+    return total_charge, resnum_charge_dict
 
-    with open(charges_fn, "w") as output:
-        output.write("\n".join(out_data))
-
-    total_charge = 0
-    updated_charge = False
-    # Perhaps awk for charge column and sum. Grep can filter out non-utf8 characters
-    # os.system(f"awk '{{print $3, $9}}' {charges_fn} > charges_{pdb_name_no_ext}_clean.txt")
-    with open(charges_fn) as file:
-        lines = file.readlines()
-        init_resi = lines[0].split()[-3]
-        charge = 0
-        for line in lines:
-            resi_name = line.split()[-3]
-            if resi_name == init_resi:
-                charge += float(line.split()[-2])
-                updated_charge = True
-            else:
-                total_charge += charge
-                init_resi = resi_name
-                updated_charge = True
-                charge = float(line.split()[-2])
-
-
-    if updated_charge:
-        # os.system(f"rm {charges_fn} {mol2_path} tleap_{pdb_name_no_ext}.in tleap_{pdb_name_no_ext}.in *.log")
-        total_charge = round(total_charge)
-    os.chdir(def_dir)
-    return total_charge
