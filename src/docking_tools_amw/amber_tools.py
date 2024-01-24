@@ -2,7 +2,7 @@ import subprocess
 import os
 
 
-def fix_CYS_HIS_cpptraj(pdb_path, output_path=None, prepareforleap_args=['nosugar']):
+def fix_CYS_HIS_cpptraj(pdb_path, output_path=None, identifier="", prepareforleap_args=['nosugar']):
     """
     Fix CYS and HIS residues to have right resname and sulfur/disulfide bridges
     in a PDB file using cpptraj's prepareforleap command.
@@ -16,15 +16,15 @@ parm {pdb_path}
 loadcrd {pdb_path} name tmp1
 prepareforleap crdset tmp1 name tmp2 pdbout {pdb_out_path} {" ".join(prepareforleap_args)}
 """
-    with open('cpptraj.in', 'w') as f:
+    with open(f'cpptraj{identifier}.in', 'w') as f:
         f.write(cpptraj_cmd)
-    cmd = f'cpptraj -i cpptraj.in > cpptraj.out'
+    cmd = f'cpptraj -i cpptraj{identifier}.in > cpptraj{identifier}.in'
     out = subprocess.run(cmd, shell=True, check=True)
     if out.returncode != 0:
         raise RuntimeError("prepareforleap failed")
     if output_path == pdb_path:
         os.system(f'mv {pdb_out_path} {pdb_path}')
-    os.system('rm cpptraj.in cpptraj.out')
+    os.system('rm cpptra*.in cpptra*.out')
     return
 
 
