@@ -62,17 +62,13 @@ quit
         os.chdir(def_dir)
         raise RuntimeError("tleap failed")
 
-    # Extract charges from mol2 file
+    # Extract charges from specific section in mol2 file
     start_linenumber = subprocess.run(f"grep -n '@<TRIPOS>ATOM' {mol2_path} | cut -d: -f1", shell=True, check=True, capture_output=True)
     start_linenumber = int(start_linenumber.stdout.decode('utf-8').strip())
     end_linenumber = subprocess.run(f"grep -n '@<TRIPOS>BOND' {mol2_path} | cut -d: -f1", shell=True, check=True, capture_output=True)
     end_linenumber = int(end_linenumber.stdout.decode('utf-8').strip())
-    charges_fn = f"charges_{pdb_name_no_ext}.txt"
-    cmd = f"sed -n '{start_linenumber},{end_linenumber}p' {mol2_path} | sed '1d;$d' | sed 's/[^a-zA-Z0-9 +-\\*\\.]//g' > {charges_fn}"
-    out = subprocess.run(cmd, shell=True, check=True)
-
-    # need to get resname and atom amber charge, q
-    cmd = f"awk '{{print $8, $(NF - 1)}}' {charges_fn}"
+    # Need to get resname and atom amber charge; however, need to be careful of special characters in mol2 file
+    cmd = f"sed -n '{start_linenumber},{end_linenumber}p' {mol2_path} | sed '1d;$d' | sed 's/[^a-zA-Z0-9 +-\\*\\.]//g' | awk '{{print $8, $(NF - 1)}}'"
     out = subprocess.run(cmd, shell=True, check=True, capture_output=True)
     resname_charge = out.stdout.decode('utf-8', 'ignore').strip().split("\n")
     # set counters
@@ -105,7 +101,7 @@ quit
             resname = f"{resname}{resnum}"
             total_charge += charge
             resnum += 1
-    os.system(f"rm {charges_fn} {mol2_path} {tleap_in_fn} tleap_{pdb_name_no_ext}.dat *.log")
+    os.system(f"rm {mol2_path} {tleap_in_fn} tleap_{pdb_name_no_ext}.dat *.log")
     total_charge = round(total_charge)
     os.chdir(def_dir)
     return total_charge, resnum_charge_dict
