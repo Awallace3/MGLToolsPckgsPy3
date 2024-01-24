@@ -1,6 +1,8 @@
 import subprocess
 import os
 from pprint import pprint as pp
+from pdbfixer import PDBFixer
+from openmm.app import PDBFile
 
 
 def fix_CYS_HIS_cpptraj(pdb_path, output_path=None, identifier="", prepareforleap_args=['nosugar']):
@@ -108,11 +110,11 @@ quit
     return total_charge, resnum_charge_dict
 
 
-def prepare_protein_QM(pdb_path, output_pdb_path: str=None):
+def prepare_protein_QM(pdb_path, output_pdb_path: str=None, pH: float=7.4, identifier=""):
     if output_pdb_path is None:
-        output_pdb_path = pdb_fname.replace(".pdb", "_hfixed.pdb")
+        output_pdb_path = pdb_path.replace(".pdb", "_hfixed.pdb")
     # Need to run 'reduce' to add hydrogens
-    cmd = ["reduce", "-FLIP", pdb_fname]
+    cmd = ["reduce", "-FLIP", pdb_path]
     with open(output_pdb_path, "w") as file, open("error.log", "w") as error_file:
         result = subprocess.run(cmd, stdout=file, stderr=error_file)
     # Need to add missing residues/atoms
@@ -124,7 +126,7 @@ def prepare_protein_QM(pdb_path, output_pdb_path: str=None):
     fixer.addMissingHydrogens(pH=pH)
     PDBFile.writeFile(fixer.topology, fixer.positions, open(output_pdb_path, "w"))
     # Here we need to fix the HIS and CYS residues to have correct resnames for tleap
-    fix_CYS_HIS_cpptraj(output_pdb_path, output_pdb_path, identifier=n)
+    fix_CYS_HIS_cpptraj(output_pdb_path, output_pdb_path, identifier=identifier)
     # Get the charge of the protein with tleap
     total_charge, resnum_charge_dict = get_amber_charge(output_pdb_path)
     return total_charge, resnum_charge_dict
