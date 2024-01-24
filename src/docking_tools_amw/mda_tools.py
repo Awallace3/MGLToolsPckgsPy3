@@ -1,6 +1,7 @@
 import MDAnalysis as mda
 import warnings
 import pandas as pd
+warnings.filterwarnings("ignore")
 
 
 def convert_bio_to_pdb(bf):
@@ -64,6 +65,11 @@ def split_pdb_into_components(pdb_path, pdb_id=None, count=None, verbose=0):
         ) as W:
             W.write(chain)
     return
+
+
+def get_atom_count_pdb(pdb_path):
+    pdb = mda.Universe(pdb_path)
+    return int(pdb.atoms.n_atoms)
 
 
 def split_pdb_into_components_identify_ligand(
