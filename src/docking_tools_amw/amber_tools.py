@@ -114,7 +114,7 @@ def prepare_protein_QM(pdb_path, output_pdb_path: str=None, pH: float=7.4, ident
     if output_pdb_path is None:
         output_pdb_path = pdb_path.replace(".pdb", "_hfixed.pdb")
     # Need to run 'reduce' to add hydrogens
-    cmd = ["reduce", "-FLIP", pdb_path]
+    cmd = ["reduce", "-HIS", "-FLIP", pdb_path]
     with open(output_pdb_path, "w") as file, open("error.log", "w") as error_file:
         result = subprocess.run(cmd, stdout=file, stderr=error_file)
     # Need to add missing residues/atoms
@@ -130,4 +130,3 @@ def prepare_protein_QM(pdb_path, output_pdb_path: str=None, pH: float=7.4, ident
     # Get the charge of the protein with tleap
     total_charge, resnum_charge_dict = get_amber_charge(output_pdb_path)
     return total_charge, resnum_charge_dict
-
