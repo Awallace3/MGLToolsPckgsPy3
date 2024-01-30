@@ -61,11 +61,13 @@ grid_parameter_list4= [
 
 
 class GridParameters(UserDict):
-    def __init__(self, receptor_filename='', ligand_filename=''):
+    def __init__(self, receptor_filename='', ligand_filename='', identifier=None):
         UserDict.__init__(self)
         basename = os.path.basename(receptor_filename)
         self.receptor_filename = basename
         self.receptor_stem = os.path.splitext(basename)[0]
+        if identifier is not None:
+            self.receptor_stem += identifier
         #self.receptor_stem = basename[:string.rfind(basename, '.')]
 
         # if the grid parameters have been read from a file,
@@ -663,7 +665,7 @@ class GridParameters(UserDict):
         #print "GPO: set ligand_filename to ", self.ligand_filename    
 
 
-    def set_receptor4(self, receptor_filename, types=None):
+    def set_receptor4(self, receptor_filename, types=None, identifier=None):
         #this should set receptor_types
         ftype = os.path.splitext(receptor_filename)[-1]
         if ftype!=".pdbqt":
@@ -681,6 +683,8 @@ class GridParameters(UserDict):
         basename = os.path.basename(receptor_filename)
         self.receptor_filename = basename
         self.receptor_stem = os.path.splitext(basename)[0]
+        if identifier is not None:
+            self.receptor_stem += identifier
         if receptor_filename!='':
             self['receptor']['value'] = basename
             self['gridfld']['value'] = self.receptor_stem + '.maps.fld'
@@ -899,9 +903,9 @@ class GridParameter4FileMaker:
     sets npts according to bounding box
     """
 
-    def __init__(self, verbose = None, size_box_to_include_ligand=True):
+    def __init__(self, verbose = None, size_box_to_include_ligand=True, identifier=None):
         self.verbose = verbose
-        self.gpo = GridParameters()
+        self.gpo = GridParameters(identifier=identifier)
         self.size_box_to_include_ligand = size_box_to_include_ligand
 
 
@@ -1009,7 +1013,7 @@ class GridParameter4FileMaker:
         mol.center = mino + (maxo - mino)/2.0
 
 
-    def set_receptor(self, receptor_filename, gpf_filename=None):
+    def set_receptor(self, receptor_filename, gpf_filename=None, identifier=None):
         ftype = os.path.splitext(receptor_filename)[-1]
         if ftype!=".pdbqt":
             print("set_receptor:only pdbqt files valid.  ", ftype," files are not supported.")
@@ -1021,7 +1025,7 @@ class GridParameter4FileMaker:
             return 
         if self.verbose: print("set_receptor filename to ", receptor_filename)
         receptor_types = self.getTypes(self.receptor)
-        self.gpo.set_receptor4(receptor_filename, types=receptor_types)
+        self.gpo.set_receptor4(receptor_filename, types=receptor_types, identifier=identifier)
         self.receptor_filename = os.path.basename(receptor_filename)
         if hasattr(self, 'receptor'):
             self.receptor_stem = self.receptor.name

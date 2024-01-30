@@ -46,6 +46,7 @@ def prepare_gpf(
     size_box_to_include_ligand=True,
     npts_increment=0,
     ligand_types_defined=False,
+    identifier=None
 ):
     """
     flag options as args:
@@ -66,13 +67,13 @@ def prepare_gpf(
         sys.exit()
 
     gpfm = GridParameter4FileMaker(
-        size_box_to_include_ligand=size_box_to_include_ligand, verbose=verbose
+        size_box_to_include_ligand=size_box_to_include_ligand, verbose=verbose, identifier=identifier,
     )
     if gpf_filename is not None:
         gpfm.read_reference(gpf_filename)
     if ligand_filename is not None:
         gpfm.set_ligand(ligand_filename)
-    gpfm.set_receptor(receptor_filename)
+    gpfm.set_receptor(receptor_filename, identifier=identifier)
     if directory is not None:
         gpfm.set_types_from_directory(directory)
     if flexres_filename is not None:
@@ -203,7 +204,7 @@ if __name__ == "__main__":
         gpfm.read_reference(gpf_filename)
     if ligand_filename is not None:
         gpfm.set_ligand(ligand_filename)
-    gpfm.set_receptor(receptor_filename)
+    gpfm.set_receptor(receptor_filename, identifier=identifier)
     if directory is not None:
         gpfm.set_types_from_directory(directory)
     if flexres_filename is not None:
