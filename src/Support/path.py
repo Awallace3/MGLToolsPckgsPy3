@@ -3,9 +3,10 @@
 # $Header: /mnt/raid/services/cvs/Support/path.py,v 1.16 2007/11/20 23:24:40 sargis Exp $
 # $Id: path.py,v 1.16 2007/11/20 23:24:40 sargis Exp $
 import os, sys
-from user import home
 from Support.version import __version__
-rc = home + os.sep + ".mgltools" + os.sep + __version__
+# from user import home
+# rc = home + os.sep + ".mgltools" + os.sep + __version__
+rc = os.path.join(os.path.expanduser("~"), ".mgltools", __version__)
 
 if rc:
     updates_rc_dir = rc + os.sep + 'update'

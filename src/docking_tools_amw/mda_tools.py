@@ -2,7 +2,28 @@ import MDAnalysis as mda
 import warnings
 import pandas as pd
 import numpy as np
+import os
+import qcelemental as qcel
 warnings.filterwarnings("ignore")
+
+
+def mda_universe_to_xyz(u):
+    u_xyz = u.atoms.positions
+    u_elements = u.atoms.elements
+    u_elements = [qcel.periodictable.to_Z(i) for i in u_elements]
+    g = np.concatenate((np.reshape(u_elements, (-1, 1)), u_xyz), axis=1)
+    return g
+
+
+def read_pdbqt(lig_pdbqt, model=1, identifier=1):
+    if not os.path.exists(lig_pdbqt):
+        raise ValueError(f"File {lig_pdbqt} not found")
+    # sed remove all lines outside of MODEL {model} to ENDMDL
+    tmp_file = f"tmp{identifier}.pdbqt"
+    os.system(f"sed -n '/^MODEL 1$/,/^ENDMDL/p' {lig_pdbqt} > {tmp_file}")
+    u = mda.Universe(tmp_file)
+    # os.system(f"rm {tmp_file}")
+    return u.atoms.positions
 
 
 def convert_bio_to_pdb(bf):
@@ -67,7 +88,7 @@ def split_pdb_into_components(pdb_path, pdb_id=None, count=None, verbose=0, vers
             W.write(chain)
     return
 
-def pdb_to_componets_mixed(pdb_path, pdb_others_path, pdb_base_out, override=False, verbose=1):
+def pdb_to_componets_mixed(pdb_path, pdb_others_path, pdb_base_out, ligand_resname=None, override=False, verbose=1):
     """
     Takes a pdb file and splits it into protein; protein and water; protein and other; and protein, water, and other
     """
@@ -80,6 +101,9 @@ def pdb_to_componets_mixed(pdb_path, pdb_others_path, pdb_base_out, override=Fal
     pro_wat_out = f"{pdb_base_out}_pro_wat.pdb"
     pro_oth_out = f"{pdb_base_out}_pro_oth.pdb"
     pro_wat_oth_out = f"{pdb_base_out}_pro_oth_wat.pdb"
+    if ligand_resname is not None:
+        lig_out = f"{pdb_base_out}_lig.pdb"
+
     pdb = mda.Universe(pdb_path)
     protein = pdb.select_atoms("protein")
     with mda.Writer(pro_out, protein.n_atoms) as W:
@@ -104,10 +128,18 @@ def pdb_to_componets_mixed(pdb_path, pdb_others_path, pdb_base_out, override=Fal
         pro_wat_oth_out = None
         pro_oth_atom_count = None
         pro_wat_oth_atom_count = None
+    if ligand_resname is not None:
+        ligand = pdb.select_atoms(f"resname {ligand_resname}")
+        with mda.Writer(lig_out, ligand.n_atoms) as W:
+            W.write(ligand)
+        ligand_atom_count = get_atom_count_pdb(lig_out)
+    else:
+        lig_out = None
+        ligand_atom_count = None
 
     pro_atom_count = get_atom_count_pdb(pro_out)
     pro_wat_atom_count = get_atom_count_pdb(pro_wat_out)
-    return pro_out, pro_wat_out, pro_oth_out, pro_wat_oth_out, pro_atom_count, pro_wat_atom_count, pro_oth_atom_count, pro_wat_oth_atom_count
+    return pro_out, pro_wat_out, pro_oth_out, pro_wat_oth_out, pro_atom_count, pro_wat_atom_count, pro_oth_atom_count, pro_wat_oth_atom_count, lig_out, ligand_atom_count
 
 
 def get_atom_count_pdb(pdb_path):

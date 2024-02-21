@@ -1,5 +1,6 @@
 import os
 import sys
+from pprint import pprint as pp
 
 from MolKit import Read
 
@@ -73,6 +74,8 @@ def prepare_ligand4(
     coord_dict = {}
     for a in mol.allAtoms:
         coord_dict[a] = a.coords
+
+    pp(coord_dict)
 
     mol.buildBondsByDistance()
     if charges_to_add is not None:
