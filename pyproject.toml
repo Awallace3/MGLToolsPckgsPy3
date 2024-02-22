@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docking_tools_amw"
-version = "0.3.0"
+version = "0.4.0"
 authors = [
   { name="Austin M. Wallace", email="awallace43@gatech.edu" },
 ]
