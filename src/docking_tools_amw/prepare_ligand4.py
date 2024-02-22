@@ -71,11 +71,10 @@ def prepare_ligand4(
                         len(mol.allAtoms),
                         "atoms",
                     )
-    # coord_dict = {}
-    # for a in mol.allAtoms:
-    #     coord_dict[a] = a.coords
-    #
-    # pp(coord_dict)
+    coord_dict = {}
+    for a in mol.allAtoms:
+        coord_dict[a] = a.coords
+
 
     mol.buildBondsByDistance()
     if charges_to_add is not None:
