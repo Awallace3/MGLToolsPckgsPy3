@@ -8,3 +8,7 @@ try:
     from . import rdkit_tools
 except ImportError:
     pass
+try:
+    from . import pymol_tools
+except ImportError:
+    pass
